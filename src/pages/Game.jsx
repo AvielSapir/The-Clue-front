@@ -1,61 +1,46 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
+import Cookies from 'js-cookie';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
-const items = [
-    {id: 1, label: "1", description: "Shards of glass were found near the body, containing drops of wine."},
-    {id: 2, label: "2", description: "A bloody knife was found hidden under the Persian rug."},
-    {id: 3, label: "3", description: "A torn piece of a threatening letter with partial fingerprints."}
-];
 
-const suspects = [
-    {
-        //bot -> model
-        id: 1,
-        name: "ploni almoni 1",
-        messages: [
-            { sender: "user", text: "Where were you on the night of the murder?" },
-            { sender: "bot", text: "I was at home, sleeping." }
-        ]
-    },
-    {
-        id: 2,
-        name: "ploni almoni 2",
-        messages: [
-            { sender: "user", text: "Did you know the victim?" },
-            { sender: "bot", text: "We were business partners." }
-        ]
-    },
-    {
-        id: 3,
-        name: "ploni almoni 3",
-        messages: [
-            { sender: "user", text: "Your fingerprints were found on the glass." },
-            { sender: "bot", text: "I poured a drink earlier that evening." }
-        ]
-    },
-    {
-        id: 4,
-        name: "ploni almoni 4",
-        messages: [
-            { sender: "user", text: "Why did you run when the police arrived?" },
-            { sender: "bot", text: "I panicked." }
-        ]
-    }
-];
 
 
 function Game() {
+    console.log("hello")
+    const location = useLocation();
+    const response = location.state?.response;
+
+    const brief = response.brief;
+    const suspects = response.suspects;
+    const items = response.items;
+
+
     const [selectedItemId, setSelectedItemId] = useState(items[0].id);
     const selectedItem = items.find(item => item.id === selectedItemId);
 
     const [selectedSuspectId, setSelectedSuspectId] = useState(suspects[0].id);
     const selectedSuspect = suspects.find(suspect => suspect.id === selectedSuspectId);
+    const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const token = Cookies.get("token");
+        if (!token) {
+            navigate("/")
+        }
+
+    }, [navigate]);
+
+
+
+
 
     return (
         <div style={styles.container}>
 
             <header style={styles.navbar}>
-                Navbar
+                NavBar
             </header>
 
 
@@ -96,7 +81,7 @@ function Game() {
                             .chat-scroll::-webkit-scrollbar-thumb:hover { background: #2c3a58;`}
                         </style>
 
-                        {selectedSuspect && selectedSuspect.messages.map((msg, index) => (
+                        {selectedSuspect && selectedSuspect.chatHistory.map((msg, index) => (
                             <div
                                 key={index}
                                 style={msg.sender === 'user' ? styles.userMessage : styles.botMessage}
@@ -127,16 +112,18 @@ function Game() {
                                 <button
                                     key={item.id}
                                     style={item.id === selectedItemId ? styles.ItemCardSelected : styles.ItemCard}
-                                    onClick={() => setSelectedItemId(item.id)}                                >{item.label}
+                                    onClick={() => setSelectedItemId(item.id)}>
+                                    {item.name}
                                 </button>
                             ))}
                         </div>
                         <div style={styles.ItemDescription} className="chat-scroll">
-                            {selectedItem ? selectedItem.description : "No item selected"}
+                            {selectedItem ? selectedItem.context : "No item selected"}
                         </div>
                     </div>
                     <div style={styles.logWindow}>
                         Log
+                        {brief}
                     </div>
                 </aside>
             </div>
